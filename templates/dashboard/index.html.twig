@@ -37,8 +37,15 @@
                             {% endif %}
                         {% endfor %}
                     </td>
+                    <td>
+                        {% if user.isEnabled == false %}
+                            Désactiver
+                        {% else %}
+                            Activer
+                        {% endif %}
+                    </td>
                     {% if user.username != app.user.username %}
-                        <td><a href="http://127.0.0.1:8000/dashboard?_switch_user={{  user.username }}">impersonation</a></td>
+                        <td><a href="{{ path('app_home') }}?_switch_user={{  user.username }}">impersonation</a></td>
                     {% endif %}
                 </tr>
                 

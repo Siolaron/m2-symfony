@@ -10,7 +10,7 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class DashboardController extends AbstractController
 {
-    #[Route('/dashboard', name: 'app_dashboard')]
+    #[Route('/admin/dashboard', name: 'app_dashboard')]
     public function index(UserRepository $users): Response
     {
         try{
@@ -19,14 +19,7 @@ class DashboardController extends AbstractController
         catch(Exception $e){
             return $this->redirectToRoute('app_login');
         }
-        try{
-            $this->denyAccessUnlessGranted('ROLE_ADMIN');
-        }
-        catch(Exception $e){
-            return $this->redirectToRoute('app_home');
-        }
         
-
         return $this->render('dashboard/index.html.twig', [
             'users' => $users->findAll(),
         ]);
