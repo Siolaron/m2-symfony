@@ -1,0 +1,53 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello DashboardController!{% endblock %}
+
+{% block body %}
+<style>
+    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
+    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
+</style>
+
+<div class="example-wrapper">
+    <h1>Dashboard</h1>
+    <a href="{{ path('app_home') }}">Accueil</a>
+    
+    <h2>Liste des utilisateurs</h2>
+    <table>
+        <thead>
+            <th>ID</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Rôles</th>
+        </thead>
+        <tbody>
+            {# On boucle sur les utilisateurs #}
+            {% for user in users %}
+                <tr>
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>
+                        {# On boucle sur les rôles #}
+                        {% for role in user.roles %}
+                            {% if role == "ROLE_ADMIN" %}
+                                Administrateur
+                            {% elseif role == "ROLE_USER" %}
+                                Utilisateur
+                            {% endif %}
+                        {% endfor %}
+                    </td>
+                    {% if user.username != app.user.username %}
+                        <td><a href="http://127.0.0.1:8000/dashboard?_switch_user={{  user.username }}">impersonation</a></td>
+                    {% endif %}
+                </tr>
+                
+            {% else %}
+                <p>Aucun utilisateur inscrit</p>
+            {% endfor %}
+        </tbody>
+    </table>
+
+
+</div>
+{% endblock %}
