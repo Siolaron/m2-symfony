@@ -39,9 +39,9 @@
                     </td>
                     <td>
                         {% if user.isEnabled == false %}
-                            Désactiver
+                            <a href="{{ path('app_dashboard') }}/user/{{ user.id }}">Désactiver</a>
                         {% else %}
-                            Activer
+                            <a href="{{ path('app_dashboard') }}/user/{{ user.id }}">Activer</a>
                         {% endif %}
                     </td>
                     {% if user.username != app.user.username %}
