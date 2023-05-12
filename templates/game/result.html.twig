@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello HomeController!{% endblock %}
+{% block title %}Hello GameController!{% endblock %}
 
 {% block body %}
 <style>
@@ -9,8 +9,6 @@
 </style>
 
 <div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
-
     {% if is_granted('IS_IMPERSONATOR') %}
         <a href="{{ impersonation_exit_path(path('app_dashboard') ) }}">Exit impersonation</a>
     {% endif %}
@@ -26,8 +24,11 @@
         <a href=" {{ path('app_login') }} ">Se connecter</a>
     {% endif %}
 
-     {% if is_granted('ROLE_USER') %}
-        <a href=" {{ path('app_game_new') }} ">Créer une game</a>
+    <p>Numéro de la game: {{ game.id }}</p>
+	<p>Résultat : {{ result }} a gagné</p>
+
+	{% if is_granted('ROLE_USER') %}
+        <a href=" {{ path('app_game_new') }} ">Rejouer</a>
      {% endif %}
 </div>
 {% endblock %}

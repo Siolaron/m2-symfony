@@ -1,0 +1,51 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello GameController!{% endblock %}
+
+{% block body %}
+<style>
+    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
+    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
+</style>
+
+<div class="example-wrapper">
+    {% if is_granted('IS_IMPERSONATOR') %}
+        <a href="{{ impersonation_exit_path(path('app_dashboard') ) }}">Exit impersonation</a>
+    {% endif %}
+    
+    {% if is_granted('ROLE_ADMIN') %}
+        <a href=" {{ path('app_dashboard') }} ">Dashboard</a>
+    {% endif %}
+    
+    {% if is_granted('ROLE_USER') %}
+        <a href=" {{ path('app_logout') }} ">Se déconnecter</a>
+        <a href=" {{ path('app_game_play', { 'id': game.id }) }} ">Refresh</a>
+    {% else %}
+        <a href=" {{ path('app_register') }} ">S'inscrire</a>
+        <a href=" {{ path('app_login') }} ">Se connecter</a>
+    {% endif %}
+
+    <p>Numéro de la game: {{game.id}}</p>
+    <p>C'est à {{ player }} de jouer</p>
+   <table class="board">
+		{% for row in board %}
+			<tr class="board__row">
+				{% for cell in row %}
+					{% if cell == 'red' %}
+						<td class="board__cell board__cell--red">R</td>
+					{% elseif cell == 'yellow' %}
+						<td class="board__cell board__cell--yellow">Y</td>
+					{% else %}
+						<td class="board__cell board__cell--empty">
+							<form method="post" action="{{ path('app_game_play', { 'id': game.id }) }}">
+								<input type="hidden" name="column" value="{{ loop.index0 }}">
+								<input type="submit" value="">
+							</form>
+						</td>
+					{% endif %}
+				{% endfor %}
+			</tr>
+		{% endfor %}
+	</table>
+</div>
+{% endblock %}

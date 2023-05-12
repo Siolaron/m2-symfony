@@ -29,7 +29,7 @@ class DashboardController extends AbstractController
     }
 
     #[Route('/admin/dashboard/user/{id}', name: 'app_dashboard_update')]
-    public function enableUser(UserRepository $users, User $user, EntityManagerInterface $entityManager): Response
+    public function enableUser( User $user, EntityManagerInterface $entityManager): Response
     {
         if($user->isEnabled() == 1){
             $user->setIsEnabled(0);

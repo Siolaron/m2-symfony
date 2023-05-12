@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationException;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Http\Authenticator\AbstractLoginFormAuthenticator;
@@ -39,7 +40,7 @@ class AppCustomAuthenticator extends AbstractLoginFormAuthenticator
             new UserBadge($username, function($userIdentifier){
                 $user = $this->userRepo->findOneBy(['username' => $userIdentifier]);
                 if ($user->isEnabled() == false) {
-                    throw new UserNotFoundException();
+                    throw new CustomUserMessageAuthenticationException('Utilisateur bloqué');
                 }
                 return $user;
             }),
