@@ -4,13 +4,16 @@ namespace App\Controller;
 
 use App\Entity\Game;
 use App\Entity\User;
-use App\Repository\GameRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Mime\Email;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 
 class GameController extends AbstractController
 {
@@ -26,10 +29,18 @@ class GameController extends AbstractController
     }
 
     #[Route('/game/new', name: 'app_game_new')]
-    public function new(EntityManagerInterface $entityManager): Response
+    public function new(EntityManagerInterface $entityManager, LoggerInterface $logger): Response
     {
         $game = new Game();
         $game->addPlayer($this->getUser());
+
+        $logger->info('Une nouvelle partie est créer et à pour ID : {gameId}', [
+            'gameId' => $game->getId(),
+        ]);
+        $logger->info('{namePlayer} a rejoint la partie.', [
+            'namePlayer' => $game->getPlayers()->last(),
+        ]);
+        
         // tell Doctrine you want to (eventually) save the Product (no queries yet)
         $entityManager->persist($game);
 
@@ -40,10 +51,14 @@ class GameController extends AbstractController
     }
 
     #[Route('/game/join/{id}', name: 'app_game_join')]
-    public function joinGame(Game $game, EntityManagerInterface $entityManager): Response
+    public function gameSerialize(Game $game, EntityManagerInterface $entityManager, LoggerInterface $logger): Response
     {
         $game->addPlayer($this->getUser());
 
+        $logger->info('{namePlayer} a rejoint la partie.', [
+            'namePlayer' => $game->getPlayers()->last(),
+        ]);
+        
         // tell Doctrine you want to (eventually) save the Product (no queries yet)
         $entityManager->persist($game);
 
@@ -54,7 +69,7 @@ class GameController extends AbstractController
     }
 
     #[Route('/game/{id}', name: 'app_game_play')]
-    public function game(Game $game, EntityManagerInterface $entityManager, Request $request, UserRepository $user): Response
+    public function game(Game $game, EntityManagerInterface $entityManager, Request $request, MailerInterface $mailer, LoggerInterface $logger): Response
     {
         if(!$game->getPlayers()->contains($this->getUser())){
             return $this->redirectToRoute('app_home');
@@ -67,7 +82,27 @@ class GameController extends AbstractController
 
         $this->checkEndGame($game, $entityManager); 
 
+        if($game->getLastMove() != null){
+            $logger->info('{namePlayer} a joué.', [
+                'namePlayer' => $game->getLastMove()->getUsername(),
+            ]);
+        }
+
         if($game->getWinner() != null){
+
+            $logger->info('{namePlayer} a gagné la partie.', [
+                'namePlayer' => $game->getWinner()->getUsername(),
+            ]);
+
+            if($game->getWinner() != $game->getPlayers()->first()){
+                $this->sendEmailDefeat($mailer,$game->getPlayers()->first()); 
+            }
+            else{
+                $this->sendEmailDefeat($mailer,$game->getPlayers()->last()); 
+            }
+
+           $this->sendEmailVictory($mailer,$game->getWinner()); 
+   
             return $this->render('game/result.html.twig', [
                 'result' => $game->getWinner()->getUserIdentifier(),
                 'game' => $game,
@@ -138,7 +173,6 @@ class GameController extends AbstractController
             for ($i = 0; $i < self::BOARD_ROWS; ++$i) {
                 if ($board[$i][$j] === $player) {
                     ++$count;
-                    dump($count);
                     if (4 === $count) {
                         $game->setWinner($this->getUser());
                         $entityManager->persist($game);
@@ -203,4 +237,28 @@ class GameController extends AbstractController
         return $game->getPlayers()->first();
     }
 
+    public function sendEmailVictory(MailerInterface $mailer, User $user)
+    {
+        $email = (new TemplatedEmail())
+            ->from($user->getEmail())
+            ->to('m2@symfony.com')
+            ->subject('Victoire !')
+            ->htmlTemplate('email/victory.html.twig');
+        
+;
+
+        $mailer->send($email);
+    }
+
+    public function sendEmailDefeat(MailerInterface $mailer, User $user)
+    {
+        $email = (new TemplatedEmail())
+            ->from($user->getEmail())
+            ->to('m2@symfony.com')
+            ->subject('Défaite !')
+            ->htmlTemplate('email/defeat.html.twig');
+
+        $mailer->send($email);
+
+    }
 }

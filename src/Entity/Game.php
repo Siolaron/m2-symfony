@@ -7,6 +7,9 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\Ignore;
 
 #[ORM\Entity(repositoryClass: GameRepository::class)]
 class Game
@@ -16,16 +19,21 @@ class Game
     #[ORM\Column]
     private ?int $id = null;
 
+    #[Assert\Type(
+        type: 'array',
+        message: 'The value {{ value }} is not a valid {{ type }}.',
+    )]
     #[ORM\Column(type: Types::ARRAY)]
     private array $grid = [];
 
     #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'games')]
+    #[Ignore]
     private Collection $players;
 
-    #[ORM\ManyToOne(inversedBy: 'games')]
+    #[ORM\ManyToOne]
     private ?User $lastMove = null;
 
-    #[ORM\ManyToOne(inversedBy: 'games')]
+    #[ORM\ManyToOne]
     private ?User $winner = null;
 
     public function __construct()
@@ -39,6 +47,7 @@ class Game
         $this->players = new ArrayCollection();
     }
 
+    #[Groups(['grille'])]
     public function getId(): ?int
     {
         return $this->id;
@@ -59,6 +68,7 @@ class Game
     /**
      * @return Collection<int, User>
      */
+    #[Ignore]
     public function getPlayers(): Collection
     {
         return $this->players;

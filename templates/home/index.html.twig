@@ -28,6 +28,11 @@
 
      {% if is_granted('ROLE_USER') %}
         <a href=" {{ path('app_game_new') }} ">Créer une game</a>
+
+        <p>Pour se connecter à une game */game/join/id_de_la_game*</p>
      {% endif %}
+
+
+
 </div>
 {% endblock %}
